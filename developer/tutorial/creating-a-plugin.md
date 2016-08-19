@@ -92,9 +92,10 @@ First let's create our `defaults.js` with our custom layout. You will place this
 
 ``` javascript
 import { Session } from "meteor/session";
+import { Logger } from "/client/api";
 
 Session.set("DEFAULT_LAYOUT", "coreLayoutBeesknees");
-Session.set("DEFAULT_WORKFLOW", "coreWorkflow");
+Logger.info("setting DEFAULT_LAYOUT");
 ```
 
 In order for this file to take affect, we need to also import it. So we add it to our `index.js` in your `client` directory.
@@ -140,6 +141,37 @@ To the `registry` key we are going to add a `layout` entry that looks like this:
         adminControlsFooter: "adminControlsFooter"
       }
     }]
+```
+
+We'll end up with `defaults.js` like this:
+
+```
+import { Reaction } from "/server/api";
+
+// Register package as ReactionCommerce package
+Reaction.registerPackage({
+  label: "Bees Knees",
+  name: "beesknees",
+  icon: "fa fa-vine",
+  autoEnable: true,
+  layout: [{
+    layout: "coreLayoutBeesknees",
+    workflow: "coreWorkflow",
+    collection: "Products",
+    theme: "default",
+    enabled: true,
+    structure: {
+      template: "productsLanding",
+      layoutHeader: "layoutHeader",
+      layoutFooter: "layoutFooter",
+      notFound: "productNotFound",
+      dashboardHeader: "",
+      dashboardControls: "dashboardControls",
+      dashboardHeaderControls: "",
+      adminControlsFooter: "adminControlsFooter"
+    } }
+  ]
+});
 ```
 
 You can see we specified several things there. The most important thing was the "layout" record, which refers to the new layout template we will create in the next chapter. We also specify which templates do we want for the header and footer (we are just keeping the default for now), and what's the main template that we render and that's `products`. We also
@@ -261,7 +293,7 @@ change the way some things are stored in the database but don't want to start ov
 
 The sample data files are located at `private/data` in the repo. To use them you need to copy them to the `private/data` directory at the root of your project.
 
-Startup hook are already built into the project to load these four files on startup. But what if you wanted to load additional files (Discounts or Taxes for example)? You can hook into the Reaction Commerce start-up process by using the `Hooks` object in the API. We don't have any additional data to load right now but let's create a `load.js` file in our `server` directory and add this code. You can see that we just add a callback to be executed after the "onCoreInit" event is fired. This can be pretty much any arbitrary code you want.
+Startup hook are already built into the project to load these four files on startup. But what if you wanted to load additional files (Discounts or Taxes for example)? You can hook into the Reaction Commerce start-up process by using the `Hooks` object in the API. We don't have any additional data to load right now but let's create a `init.js` file in our `server` directory and add this code. You can see that we just add a callback to be executed after the "onCoreInit" event is fired. This can be pretty much any arbitrary code you want.
 
 ``` javascript
 import { Packages, Shops, Products, Tags } from "/lib/collections";
@@ -287,6 +319,8 @@ import "./init";
 Now let's look at the data we moved over. There are four files there `Shops.json`, `Products.json`, `Shipping.json` and `Tags.json`. Primarily we are going to be concerned with Shops and Products but these are not the only types of data you can import. If you want to import other data types please consult the main documentation under "Import".
 
 Let's look at the Shops file. There is a lot of stuff there and a lot of it you won't want to change (unless you have revolutionary opinions about how many provinces Canada has, etc.). But there are some critical pieces to change.
+
+Note that in this file we tell RC which `workflow` will be available to the Shop, so we don't get an 'Oops! not found page'.
 
 The first thing we are going to do is remove the `<blank store>` record. This second entry is to highlight how you
 can have multiple stores within Reaction Commerce. However for the purposes of this tutorial we are just creating the one store so the second one just adds confusion so let's remove the whole record. (Shops is an array of Shop records, so you can just delete the second entry in the array).
